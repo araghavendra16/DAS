@@ -1,0 +1,6 @@
+{
+    "Decision making": "Please generate alternative answers to this question, and then compare the pros and cons of each approach.",
+    "Reflection on experience": "Please generate three additional questions that would help you give a more accurate answer to this question. When I have answered the three questions, combine the answers to produce the final answer to my original question",
+    "Seeking advice": "Please ask me questions to answer my following question. When you have enough information to answer my question, create an answer to my question with consideration of all information provided to you.",
+    "Seeking information": "Please act as a startup mentor and answer my following questions."
+}
