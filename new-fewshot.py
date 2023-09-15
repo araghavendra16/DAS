@@ -18,7 +18,7 @@ import streamlit as st
 from streamlit_chat import message
 from dotenv import load_dotenv
 import os
-
+import datetime
 from langchain.chat_models import ChatOpenAI
 from langchain import LLMChain
 from langchain.prompts import (
@@ -34,7 +34,6 @@ from langchain.schema import (
     HumanMessage,
     AIMessage
 )
-
 
 examples = [
     {
@@ -86,6 +85,11 @@ examples = [
         "answer":  "Decision making"
     }
 ]
+
+def save_to_log(role, content):
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open('conversation_log.txt', 'a') as log_file:
+        log_file.write(f"{timestamp} - {role}: {content}\n")
 
 def get_question_purpose(question):
     example_selector = SemanticSimilarityExampleSelector.from_examples(
@@ -162,37 +166,38 @@ def main():
 
     # Display dropdown conditionally based on question_submitted state
     if not st.session_state.question_submitted:
-        with st.sidebar:
-            user_input = st.text_input("Your message: ", key="input")
-            user_purpose = get_question_purpose(user_input)
+        # with st.sidebar: 
+        user_input = st.text_input("Your message: ", key="input")
+        user_purpose = get_question_purpose(user_input)
 
-            if user_input:
-                st.session_state.question_submitted = True
+        if user_input:
+            st.session_state.question_submitted = True
+            chat_prompt = get_chat_prompt_by_purpose(user_purpose)
+            if user_purpose == "Decision making":
+                chat_prompt = f"{user_input}? {chat_prompt}"
+            elif user_purpose == "Reflection on experience":
+                chat_prompt = f"{user_input}? {chat_prompt}"
+            elif user_purpose == "Seeking advice":
+                chat_prompt = f"{chat_prompt} {user_input}?"
+            elif user_purpose == "Seeking information":
+                chat_prompt = f"{chat_prompt} {user_input}?."
 
-                chat_prompt = get_chat_prompt_by_purpose(user_purpose)
+            st.session_state.messages.append(SystemMessage(content=chat_prompt))
 
-                if user_purpose == "Decision making":
-                    chat_prompt = f"{user_input}? {chat_prompt}"
-                elif user_purpose == "Reflection on experience":
-                    chat_prompt = f"{user_input}? {chat_prompt}"
-                elif user_purpose == "Seeking advice":
-                    chat_prompt = f"{chat_prompt} {user_input}?"
-                elif user_purpose == "Seeking information":
-                    chat_prompt = f"{chat_prompt} {user_input}?."
-
-
-                st.session_state.messages.append(SystemMessage(content=chat_prompt))
-
-                with st.spinner("Thinking..."):
-                    response = chat(st.session_state.messages)
-                st.session_state.messages.append(AIMessage(content=response.content))
+            with st.spinner("Thinking..."):
+                response = chat(st.session_state.messages)
+            st.session_state.messages.append(AIMessage(content=response.content))
+            
+            st.session_state.question_submitted = False  #-> to not close the conversation 
 
     messages = st.session_state.get('messages', [])
     for i, msg in enumerate(messages[1:]):
         if i % 2 == 0:
             message(msg.content, is_user=True, key=str(i) + '_user')
+            save_to_log("User", msg.content)
         else:
             message(msg.content, is_user=False, key=str(i) + '_ai')
+            save_to_log("Assistant", msg.content)
 
 if __name__ == '__main__':
     main()
