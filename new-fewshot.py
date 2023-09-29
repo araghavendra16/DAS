@@ -3,21 +3,16 @@ import streamlit as st
 from streamlit_chat import message
 from dotenv import load_dotenv
 import os
-
 from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain.schema import SystemMessage, AIMessage
-
 from langchain.prompts.few_shot import FewShotPromptTemplate
 from langchain.prompts.prompt import PromptTemplate
-import os
 from langchain.prompts.example_selector import SemanticSimilarityExampleSelector
 from langchain.vectorstores import Chroma
 from langchain.embeddings import OpenAIEmbeddings
 import streamlit as st
 from streamlit_chat import message
-from dotenv import load_dotenv
-import os
 import datetime
 from langchain.chat_models import ChatOpenAI
 from langchain import LLMChain
@@ -77,10 +72,6 @@ examples = [
         "purpose": "Seeking information"
     },
     {
-        "question": "I'm at a crossroads right now. I can position my startup as a premium service or a low-cost service. Can we talk through the pros and cons?",
-        "answer":  "Decision making"
-    },
-    {
         "question": "I'm considering a pivot or new product for my business. What do you think are the pros and cons of doing this?",
         "answer":  "Decision making"
     }
@@ -105,9 +96,7 @@ def get_question_purpose(question):
 
 
 def get_chat_prompt_by_purpose(user_purpose):
-    
     json_file_path = "prompt_book.json"  
-
     with open(json_file_path, "r") as json_file:
         data = json.load(json_file)
 
@@ -132,14 +121,14 @@ def init():
 # Main function
 def main():
     init()
-    chat = ChatOpenAI(temperature=0)
+    chat = ChatOpenAI(temperature=0) # +model_name
 
-    template = """ Please act as a startup mentor. 
+    template = """
         {prompt_pattern}
         {history}
         {input}
     """
-    p_pattern = """Please ask me two short meaningful questions to answer my following question. When you have enough information to answer my question, create an answer to my question with consideration of all information provided to you. Please do not generate an answer until I did not provide you the answer to the asked questions."""
+    p_pattern = """Please act as a startup mentor"""
 
     template = template.format(prompt_pattern=p_pattern, history="{history}", input="{input}")
 
@@ -150,7 +139,8 @@ def main():
     ])
 
     memory = ConversationBufferMemory(return_messages=True)
-    conversation = ConversationChain(memory=memory, prompt=prompt, llm=chat)
+    conversation = ConversationChain(memory=
+        memory, prompt=prompt, llm=chat)
     messages = conversation.predict(input="")
 
     if "messages" not in st.session_state:
@@ -171,24 +161,35 @@ def main():
         user_purpose = get_question_purpose(user_input)
 
         if user_input:
-            st.session_state.question_submitted = True
+            #st.session_state.question_submitted = True
             chat_prompt = get_chat_prompt_by_purpose(user_purpose)
             if user_purpose == "Decision making":
+                
                 chat_prompt = f"{user_input}? {chat_prompt}"
+                st.session_state.messages[0].content = chat_prompt
             elif user_purpose == "Reflection on experience":
+                
                 chat_prompt = f"{user_input}? {chat_prompt}"
-            elif user_purpose == "Seeking advice":
+                st.session_state.messages[0].content = chat_prompt
+            elif user_purpose == "Seeking advice": 
+                
                 chat_prompt = f"{chat_prompt} {user_input}?"
+                st.session_state.messages[0].content = chat_prompt
             elif user_purpose == "Seeking information":
+                
                 chat_prompt = f"{chat_prompt} {user_input}?."
+                st.session_state.messages[0].content = chat_prompt
 
-            st.session_state.messages.append(SystemMessage(content=chat_prompt))
-
+            #st.session_state.messages.append(SystemMessage(content=chat_prompt))
+            st.session_state.messages.append(HumanMessage(content=user_input))
+            print(st.session_state.messages)         
+            
             with st.spinner("Thinking..."):
                 response = chat(st.session_state.messages)
             st.session_state.messages.append(AIMessage(content=response.content))
+            user_input = ""
             
-            st.session_state.question_submitted = False  #-> to not close the conversation 
+            #st.session_state.question_submitted = False  #-> to not close the conversation 
 
     messages = st.session_state.get('messages', [])
     for i, msg in enumerate(messages[1:]):
