@@ -168,7 +168,7 @@ def main():
                 chat_prompt = f"{user_input}? {chat_prompt}"
                 st.session_state.messages[0].content = chat_prompt
             elif user_purpose == "Seeking advice": 
-                chat_prompt = f"{chat_prompt} {user_input}?"
+                chat_prompt = f"{user_input}? {chat_prompt}"
                 st.session_state.messages[0].content = chat_prompt
             elif user_purpose == "Seeking information":
                 chat_prompt = f"{chat_prompt} {user_input}?."
@@ -176,7 +176,7 @@ def main():
 
             #st.session_state.messages.append(SystemMessage(content=chat_prompt))
             st.session_state.messages.append(HumanMessage(content=user_input))
-            #print(st.session_state.messages)         
+            print(st.session_state.messages)         
             
             with st.spinner("Thinking..."):
                 response = chat(st.session_state.messages)
@@ -186,14 +186,21 @@ def main():
             #st.session_state.question_submitted = False  #-> to not close the conversation 
 
     messages = st.session_state.get('messages', [])
-    print(messages)
     for i, msg in enumerate(messages[1:]):
         if i % 2 == 0:
             message(msg.content, is_user=True, key=str(i) + '_user')
-            save_to_log("User", msg.content)
+            #save_to_log("User", msg.content)
         else:
             message(msg.content, is_user=False, key=str(i) + '_ai')
-            save_to_log("Assistant", msg.content)
+            #save_to_log("Assistant", msg.content)
+
+    if st.button("Exit"):
+        with open('conversation_log.txt', 'w') as txt_file:
+            for msg in st.session_state.messages:
+                txt_file.write(f"{msg.content}\n")
+        # Clear the messages to reset the conversation
+        st.session_state.messages = []  
+        st.session_state.question_submitted = False  
 
 if __name__ == '__main__':
     main()
