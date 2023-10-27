@@ -1,0 +1,6 @@
+{
+    "Making decision": "Please generate alternative answers to this question, and then compare the pros and cons of each answer.",
+    "Reflecting on own experience": "Please ask me one question at a time. After I answer one question and before you ask the next question, ask me 'Do you want another question? Please answer 'Yes' or 'No':'  If I answer 'yes', please ask me the next question; if I answer 'no', please combine all the answers to provide my final response as a summarized learning points. Let's start with my question which is",
+    "Seeking advice": "Please generate three additional questions that would help you give a more comprehensive and balanced answer to this question. Please ask them one by one. When I have answered the three questions, combine the answers to produce the final answer to my original question.",
+    "Seeking information": "When I ask a question, please suggest a better version of the question to use, incorporating information specific to the question that I am using, and check with me if I would like to use the suggested version of the question. The question is:"
+}
